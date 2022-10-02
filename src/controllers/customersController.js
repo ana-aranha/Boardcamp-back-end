@@ -55,6 +55,24 @@ async function getCustomers(req, res) {
 
 async function updateCustomer(req, res) {}
 
-async function getCustomer(req, res) {}
+async function getCustomerById(req, res) {
+	const clientID = req.params.id;
 
-export { creatCustomer, getCustomer, updateCustomer, getCustomers };
+	try {
+		const customersFiltered = await connection.query(
+			"SELECT * FROM customers WHERE id = $1;",
+			[clientID],
+		);
+
+		if (!customersFiltered.rows[0]) {
+			return res.sendStatus(404);
+		}
+
+		res.send(customersFiltered.rows[0]);
+	} catch (error) {
+		console.log(error);
+		res.sendStatus(500);
+	}
+}
+
+export { creatCustomer, getCustomerById, updateCustomer, getCustomers };
