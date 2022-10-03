@@ -25,12 +25,13 @@ async function creatRental(req, res) {
 			return res.sendStatus(400);
 		}
 
+		const stock = validGame.rows[0].stockTotal;
 		const gamesFiltered = await connection.query(
 			`SELECT * FROM rentals JOIN games ON rentals."gameId" = games.id JOIN categories ON games."categoryId"= categories.id WHERE rentals."gameId" = $1 AND rentals."returnDate" IS NULL;`,
 			[newRent.gameId],
 		);
 
-		if (gamesFiltered.rows.length < gamesFiltered.rows[0].stockTotal) {
+		if (gamesFiltered.rows.length < stock) {
 			const rentDate = dayjs().format("YYYY-MM-DD");
 			const originalPrice = newRent.daysRented * validGame.rows[0].pricePerDay;
 
