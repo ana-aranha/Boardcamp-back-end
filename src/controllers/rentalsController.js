@@ -148,7 +148,7 @@ async function deleteRentals(req, res) {
 		}
 
 		connection.query("DELETE FROM rentals WHERE id = $1;", [rentalId]);
-		res.send(200);
+		res.sendStatus(200);
 	} catch (error) {
 		console.log(error);
 		res.sendStatus(500);
