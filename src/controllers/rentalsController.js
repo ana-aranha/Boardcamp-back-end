@@ -52,7 +52,47 @@ async function getRentals(req, res) {
 	const customerId = req.query.customerId;
 	const gameId = req.query.gameId;
 
+	//Join incluindo customer e game
+
 	try {
+		if (gameId) {
+			const validGame = await connection.query(
+				"SELECT * FROM games WHERE id = $1;",
+				[gameId],
+			);
+
+			if (!validGame.rows[0]) {
+				return res.sendStatus(400);
+			}
+			const gamesFiltered = await connection.query(
+				"SELECT * FROM games WHERE id = $1;",
+				[gameId],
+			);
+
+			return res.send(gamesFiltered);
+		}
+
+		if (customerId) {
+			const validCustomer = await connection.query(
+				"SELECT * FROM customers WHERE id = $1;",
+				[customerId],
+			);
+
+			if (!validCustomer.rows[0]) {
+				return res.sendStatus(400);
+			}
+
+			const customerFiltered = await connection.query(
+				"SELECT * FROM customers WHERE id = $1;",
+				[customerId],
+			);
+
+			return res.send(customerFiltered);
+		}
+
+		connection
+			.query("SELECT * FROM rentals;")
+			.then((rentals) => res.send(rentals.rows));
 	} catch (error) {
 		console.log(error);
 		res.sendStatus(500);
@@ -60,9 +100,24 @@ async function getRentals(req, res) {
 }
 
 async function deleteRentals(req, res) {
-	const deletedRental = req.params.id;
+	const rentId = req.params.id;
 
 	try {
+		const rentalFiltered = await connection.query(
+			"SELECT * FROM rentals WHERE id = $1;",
+			[rentId],
+		);
+
+		if (!rentalFiltered.rows[0]) {
+			return res.sendStatus(404);
+		}
+
+		if (rentalFiltered.rows[0].returnDate === null) {
+			return res.sendStatus(400);
+		}
+
+		connection.query("DELETE FROM rentals WHERE id = $1;", [rentId]);
+		res.send(200);
 	} catch (error) {
 		console.log(error);
 		res.sendStatus(500);
