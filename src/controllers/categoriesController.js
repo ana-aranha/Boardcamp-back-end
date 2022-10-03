@@ -16,7 +16,7 @@ async function createCategories(req, res) {
 	try {
 		const category = await connection.query(
 			"SELECT * FROM categories WHERE name ILIKE $1;",
-			[`%${name}%`],
+			[name],
 		);
 		if (category.rows[0]) {
 			return res.sendStatus(409);
