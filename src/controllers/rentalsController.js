@@ -62,6 +62,28 @@ async function getRentals(req, res) {
 	const gameId = req.query.gameId;
 
 	try {
+		if (gameId && customerId) {
+			const validGame = await connection.query(
+				"SELECT *  FROM games WHERE id = $1;",
+				[gameId],
+			);
+
+			const validCustomer = await connection.query(
+				"SELECT * FROM customers WHERE id = $1;",
+				[customerId],
+			);
+
+			if (!validGame.rows[0] || !validCustomer.rows[0]) {
+				return res.sendStatus(400);
+			}
+			const gamesFiltered = await connection.query(
+				`SELECT rentals.* , jsonb_build_object('id', customers.id, 'name', customers.name) as "customer", jsonb_build_object('id', games.id, 'name', games.name, 'categoryId', games."categoryId" ,'categoryName', categories.name) as "game" FROM rentals JOIN customers ON rentals."customerId"= customers.id JOIN games ON rentals."gameId" = games.id JOIN categories ON games."categoryId"= categories.id WHERE rentals."gameId" = $1 AND rentals."customerId"=$2;`,
+				[gameId, customerId],
+			);
+
+			return res.send(gamesFiltered.rows);
+		}
+
 		if (gameId) {
 			const validGame = await connection.query(
 				"SELECT * FROM games WHERE id = $1;",
